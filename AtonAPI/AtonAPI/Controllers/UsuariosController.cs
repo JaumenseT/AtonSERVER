@@ -12,15 +12,21 @@ namespace AtonAPI.Controllers
     public class UsuariosController : ApiController
     {
         // GET: api/Usuarios
-        public IEnumerable<string> Get()
+        public Object Get()
         {
-            return new string[] { "value1", "value2" };
-        }
+            int user = Utilities.getUserFromToken(Request);
 
-        // GET: api/Usuarios/5
-        public string Get(int id)
-        {
-            return "value";
+            if (user == -1) {
+                return new {
+                    error = "No tiene autorización",
+                };
+            }
+
+            return new {
+                user = UsuariosRepository.GetUsuarioById(user),
+                seriesVistas = UsuarioSeriesRepository.getNumSeriesUsuario(user),
+                episodiosVistos = UsuarioCapituloRepository.getNumCapitulosUsuario(user),
+            };
         }
 
         // POST: api/Usuarios

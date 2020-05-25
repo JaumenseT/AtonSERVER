@@ -28,5 +28,19 @@ namespace AtonAPI.Repositories {
                 command.ExecuteNonQuery();
             }
         }
+
+        internal static int getNumCapitulosUsuario(int idUsuario) {
+            using (MySqlConnection con = Database.GetConnection()) {
+                con.Open();
+                MySqlCommand command = con.CreateCommand();
+                command.CommandText = "select count(*) as cuenta from usuarioCapitulo where idUsuario=@idUsuario";
+                command.Parameters.AddWithValue("idUsuario", idUsuario);
+                MySqlDataReader reader = command.ExecuteReader();
+                while (reader.Read()) {
+                    return reader.GetInt32("cuenta");
+                }
+                return -1;
+            }
+        }
     }
 }

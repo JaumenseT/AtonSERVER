@@ -7,15 +7,25 @@ using System.Web.Http;
 using AtonAPI.Models;
 using AtonAPI.Repositories;
 using System.Diagnostics;
+using TvDbSharper;
 
 namespace AtonAPI.Controllers
 {
     public class SeriesController : ApiController
     {
+
         // GET: api/Series
-        public IEnumerable<string> Get()
+        public Object Get()
         {
-            return new string[] { "value1", "value2" };
+            int user = Utilities.getUserFromToken(Request);
+
+            if (user == -1) {
+                return new {
+                    error = "No tiene autorización",
+                };
+            }
+
+            return UsuarioSeriesRepository.getAllSeriesUsuario(user);
         }
 
         // GET: api/Series/5
@@ -53,7 +63,8 @@ namespace AtonAPI.Controllers
             if (!SeriesRepository.ExisteSerieDatabase(idSerie)) {
                 SeriesRepository.Save(new Serie(idSerie, "", ""));
             }
-            UsuarioSeriesRepository.Save(user, idSerie, null);
+            
+            UsuarioSeriesRepository.Save(user, idSerie, CapituloRepository.GetEpisodioId(idSerie, 1, 1));
             return "OK";
         }
 

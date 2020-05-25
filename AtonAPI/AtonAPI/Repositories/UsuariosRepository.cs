@@ -47,5 +47,19 @@ namespace AtonAPI.Repositories
             }
             return null;
         }
+
+        internal static Usuario GetUsuarioById(int idUsuario) {
+            using (MySqlConnection con = Database.GetConnection()) {
+                con.Open();
+                MySqlCommand command = con.CreateCommand();
+                command.CommandText = "select * from usuarios where id=@idUsuario";
+                command.Parameters.AddWithValue("idUsuario", idUsuario);
+                MySqlDataReader reader = command.ExecuteReader();
+                while (reader.Read()) {
+                    return new Usuario(reader.GetInt32("id"), reader.GetString("name"), reader.GetString("userName"), reader.GetString("password"));
+                }
+            }
+            return null;
+        }
     }
 }

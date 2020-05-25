@@ -12,9 +12,17 @@ namespace AtonAPI.Controllers
     public class CapituloController : ApiController
     {
         // GET: api/Capitulo
-        public IEnumerable<string> Get()
+        public Object Get()
         {
-            return new string[] { "value1", "value2" };
+            int user = Utilities.getUserFromToken(Request);
+
+            if (user == -1) {
+                return new {
+                    error = "No tiene autorización",
+                };
+            }
+
+            return CapituloRepository.getNextCapitulos(user);
         }
 
         // GET: api/Capitulo/5
@@ -38,7 +46,7 @@ namespace AtonAPI.Controllers
         }
 
         // POST: api/Capitulo
-        public Object Post(int idCapitulo, int idSerie, int numCapitulo, int numTemporada)
+        public Object Post(int idCapitulo, int idSerie)
         {
             int user = Utilities.getUserFromToken(Request);
 
@@ -51,12 +59,16 @@ namespace AtonAPI.Controllers
                 SeriesRepository.Save(new Serie(idSerie, "", ""));
             }
             if (!UsuarioSeriesRepository.ExisteUsuarioSerieDatabase(user, idSerie)) {
-                UsuarioSeriesRepository.Save(user, idSerie, null);
+                UsuarioSeriesRepository.Save(user, idSerie, CapituloRepository.GetEpisodioId(idSerie, 1, 1));
             }
-            if (!CapituloRepository.ExisteCapituloDatabase(idCapitulo)) {
-                CapituloRepository.Save(new Capitulo(idCapitulo, idSerie, numCapitulo, numTemporada));
-            }
+ 
             UsuarioCapituloRepository.Save(user, idCapitulo);
+            int nextCapitulo = SeriesRepository.GetNextEpisodio(idCapitulo, user);
+            if (nextCapitulo == 0) {
+                SeriesRepository.UpdateNextCapitulo(idSerie, null, user);
+            } else {
+                SeriesRepository.UpdateNextCapitulo(idSerie, nextCapitulo, user);
+            }
             return "OK";
         }
 
